@@ -1,0 +1,24 @@
+# Gemini 4D-SynthForge Requirements
+# Note: Isaac Sim includes its own Python environment with USD, PhysX, and Omniverse APIs
+# These are additional dependencies for video analysis and utilities
+
+# Gemini API
+google-generativeai>=0.3.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Video and Image Processing
+opencv-python>=4.8.0
+pillow>=10.0.0
+numpy>=1.24.0
+
+# Data Validation
+pydantic>=2.0.0
+
+# Progress Tracking
+tqdm>=4.65.0
+
+# Optional: USD Python bindings (only if not using Isaac Sim's bundled version)
+# Uncomment if you need standalone USD tools
+# usd-core>=23.11
