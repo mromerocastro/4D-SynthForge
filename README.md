@@ -289,7 +289,7 @@ The system varies:
 ## 📊 Technical Specifications
 
 ### Gemini Integration
-- Model: `gemini-2.0-flash-exp`
+- Model: `gemini-3-flash-preview`
 - Input: MP4/MOV video files
 - Output: Structured JSON (validated schema)
 - Temperature: 0.1 (high precision)

@@ -38,7 +38,7 @@ if not GEMINI_API_KEY:
     print("   Set it with: export GEMINI_API_KEY='your-api-key'")
 
 # Gemini model configuration
-GEMINI_MODEL = "gemini-2.0-flash-exp"  # Supports video analysis
+GEMINI_MODEL = "gemini-3-flash-preview"  # Supports video analysis
 GEMINI_TEMPERATURE = 0.1  # Low temperature for consistent structured output
 GEMINI_MAX_TOKENS = 4096
 
