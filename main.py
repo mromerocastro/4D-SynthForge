@@ -22,6 +22,7 @@ from config import (
 from video_analyzer import VideoAnalyzer
 from code_generator import IsaacCodeGenerator
 from domain_randomizer import DomainRandomizer
+from usd_variant_generator import USDVariantGenerator
 
 logging.basicConfig(
     level=logging.INFO,
@@ -91,7 +92,7 @@ class SynthForgePipeline:
         logger.info("\nSTEP 4/5: Generating Variation Scripts")
         logger.info("-" * 70)
         
-        variation_scripts = self.step4_generate_variation_scripts(variations)
+        variation_output = self.step4_generate_variation_scripts(variations, analysis_json)
         
         # Step 5: Render (optional)
         if should_render:
@@ -186,32 +187,96 @@ class SynthForgePipeline:
             logger.error(f"❌ Variation generation failed: {e}")
             raise
     
-    def step4_generate_variation_scripts(self, variations: List[Dict]) -> List[Path]:
+    def step4_generate_variation_scripts(self, variations: List[Dict], analysis_json: Path = None) -> Path:
         """
-        Step 4: Generate Isaac Sim scripts for all variations.
+        Step 4: Generate a SINGLE USD file with VariantSets for all variations.
         
         Returns:
-            List of script paths
+            Path to the master USD file
         """
         try:
-            scripts = []
+            logger.info(f"Generating master scene with {len(variations)} variants...")
             
-            logger.info(f"Generating {len(variations)} scripts...")
+            # Load base analysis if not provided (needed for static topology)
+            if not analysis_json:
+                # Fallback: recreate base analysis from first variation but stripped
+                base_analysis = variations[0] 
+            else:
+                 with open(analysis_json, 'r') as f:
+                    base_analysis = json.load(f)
+
+            # Define output path
+            output_usd = USD_SCENES_DIR / "master_scene_variants.usd"
             
-            for i, variation in enumerate(tqdm(variations, desc="Generating scripts")):
-                script_path = USD_SCENES_DIR / f"variation_{i:03d}.py"
-                self.code_generator.generate_scene(
-                    variation,
-                    script_path,
-                    headless=True
-                )
-                scripts.append(script_path)
+            # Use the new Variant Generator
+            generator = USDVariantGenerator()
             
-            logger.info(f"✅ {len(scripts)} scripts generated")
-            return scripts
+            # Check if USD libraries are available (we might not be in isaac python)
+            # If not, we cannot generate the USD directly.
+            # In that case, we generate a python script that GENERATES the USD.
             
+            try:
+                from pxr import Usd
+                # If we are here, we have USD libraries
+                generator.create_variant_stage(base_analysis, variations, output_usd)
+                return output_usd
+                
+            except ImportError:
+                logger.warning("⚠️  USD libraries not found in current environment.")
+                logger.warning("   Generating a Python script to build the variant stage in Isaac Sim.")
+                
+                # Generate a python script that imports USDVariantGenerator
+                # We need to save the variations list to a file so the script can load it
+                variations_file = OUTPUT_DIR / "all_variations.json"
+                with open(variations_file, 'w') as f:
+                    json.dump(variations, f, indent=2)
+                
+                # Create the builder script
+                builder_script = USD_SCENES_DIR / "build_variants.py"
+                
+                script_content = f'''"""
+Auto-generated script to build USD variants inside Isaac Sim
+"""
+import json
+import sys
+import os
+
+# Add project root to path to find modules
+sys.path.append(r"{str(Path(__file__).parent)}")
+
+from usd_variant_generator import USDVariantGenerator
+
+def main():
+    print("🚀 Starting USD Variant Generation inside Isaac Sim...")
+    
+    # Paths
+    base_json = r"{str(analysis_json)}"
+    variations_json = r"{str(variations_file)}"
+    output_usd = r"{str(output_usd)}"
+    
+    # Load data
+    with open(base_json, 'r') as f:
+        base_data = json.load(f)
+        
+    with open(variations_json, 'r') as f:
+        variations = json.load(f)
+        
+    # Generate
+    generator = USDVariantGenerator()
+    generator.create_variant_stage(base_data, variations, output_usd)
+    print("✅ Done!")
+
+if __name__ == "__main__":
+    main()
+'''
+                with open(builder_script, 'w', encoding='utf-8') as f:
+                    f.write(script_content)
+                    
+                logger.info(f"✅ Builder script created: {builder_script}")
+                return builder_script
+
         except Exception as e:
-            logger.error(f"❌ Script generation failed: {e}")
+            logger.error(f"❌ Variant generation failed: {e}")
             raise
     
     def step5_batch_render(self, scripts: List[Path]) -> None:
@@ -269,7 +334,8 @@ class SynthForgePipeline:
         print(f"📁 Output Directory: {OUTPUT_DIR}")
         print(f"\n📂 Key Outputs:")
         print(f"   • Analysis: {analysis_json}")
-        print(f"   • Scripts: {USD_SCENES_DIR}/variation_*.py")
+        print(f"   • Scripts: {USD_SCENES_DIR}/base_scene.py")
+        print(f"   • Master USD: {USD_SCENES_DIR}/master_scene_variants.usd")
         print(f"   • Variations: {OUTPUT_DIR}/variations/")
         
         if rendered:

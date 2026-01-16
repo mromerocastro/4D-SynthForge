@@ -42,6 +42,10 @@ GEMINI_MODEL = "gemini-3-flash-preview"  # Supports video analysis
 GEMINI_TEMPERATURE = 0.1  # Low temperature for consistent structured output
 GEMINI_MAX_TOKENS = 4096
 
+# Gemini Code Generation Configuration
+GEMINI_CODE_MODEL = "gemini-3-flash-preview"
+GEMINI_CODE_TEMPERATURE = 0.0  # Zero for maximum determinism in code generation
+
 # ============================================================================
 # ISAAC SIM CONFIGURATION
 # ============================================================================

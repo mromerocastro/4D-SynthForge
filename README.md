@@ -35,7 +35,7 @@
          │
          ▼
 ┌──────────────────────────────────┐
-│  Gemini 2.0 Flash                │
+│  Gemini 3.0 Flash                │
 │  4D Physics Reasoning Engine     │
 │  • Trajectory Analysis           │
 │  • Collision Detection           │
@@ -46,7 +46,7 @@
          ▼
 ┌──────────────────────────────────┐
 │  Code Generator                  │
-│  (FunctionGemma Bridge)          │
+│  (Gemini 3.0 Flash Coding Agent) │
 │  JSON → USD/PhysX Scripts        │
 └────────┬─────────────────────────┘
          │
@@ -142,7 +142,7 @@ python main.py examples/ball_cup.mp4 --count 100 --render
 4D-SynthForge/
 ├── config.py                    # Configuration and prompts
 ├── video_analyzer.py            # Gemini video analysis
-├── code_generator.py            # USD/PhysX code generation
+├── code_generator.py            # Gemini code generation agent
 ├── domain_randomizer.py         # Variation generator
 ├── main.py                      # Pipeline orchestrator
 ├── requirements.txt             # Python dependencies
@@ -293,6 +293,12 @@ The system varies:
 - Input: MP4/MOV video files
 - Output: Structured JSON (validated schema)
 - Temperature: 0.1 (high precision)
+
+### Gemini Coding Agent
+- Model: `gemini-3-flash-preview`
+- Input: Physics Analysis JSON
+- Output: Executable Python/USD script
+- System Prompt: Nvidia Isaac Sim & PhysX Expert
 
 ### Isaac Sim Stack
 - USD: Universal Scene Description
