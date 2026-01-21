@@ -1,4 +1,4 @@
-# Gemini 4D-SynthForge 🎬 → 🤖 → 🎲
+# 4D-SynthForge 🎬 → 🤖 → 🎲
 
 **Transform real-world videos into physics-accurate 3D simulations and generate unlimited synthetic training data.**
 
