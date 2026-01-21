@@ -28,7 +28,7 @@
 
 [Run command]: `python video_analyzer.py examples/ball_cup.mp4`
 
-Gemini 2.0 analiza el video fotograma por fotograma y extrae los parámetros físicos exactos...
+Gemini 3.0 Flash analiza el video fotograma por fotograma y extrae los parámetros físicos exactos...
 
 [Show JSON output]
 
@@ -73,7 +73,7 @@ El sistema genera 100 variaciones automáticamente:
 **Script**:
 "Esto funciona porque combinamos:
 
-1. **Gemini 2.0 Flash** - Razonamiento multimodal de video a física
+1. **Gemini 3.0 Flash** - Razonamiento multimodal de video a física
 2. **Nvidia Isaac Sim** - Simulación profesional con PhysX GPU
 3. **Layered Randomization** - Estrategia híbrida para separar física de apariencia (Dynamic vs Background)
 4. **Validation** - Validado por research reciente (Motive 2026): "Motion Quality is King"
@@ -155,8 +155,12 @@ Gracias. ¿Preguntas?"
 # Step 1: Analyze
 python video_analyzer.py examples/ball_cup.mp4
 
-# Step 2: Full pipeline
+# Step 2: Full pipeline (Auto)
 python main.py examples/ball_cup.mp4 --count 9
+
+# Step 2: Full pipeline (Hybrid - Wizard of Oz)
+python main.py examples/ball_cup.mp4 --base_usd scenes/my_scene.usd
+
 
 # Fallback: Show pre-generated
 ls output/variations/
