@@ -108,13 +108,7 @@ python video_analyzer.py examples/ball_cup.mp4
 
 **Output**: `output/ball_cup_analysis.json`
 
-#### 2. Generate Isaac Sim Script
 
-```bash
-python code_generator.py output/ball_cup_analysis.json
-```
-
-**Output**: `output/usd_scenes/generated_scene.py`
 
 #### 3. Create Variations
 
