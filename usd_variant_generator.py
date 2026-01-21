@@ -39,11 +39,30 @@ class USDVariantGenerator:
         logger.info(f"⚡ Creating USD Stage with {len(variations)} variants at: {output_path}")
         
         # 1. Create Stage
-        self.stage = Usd.Stage.CreateNew(str(output_path))
+        # CRITICAL FIX: Handle Isaac Sim's persistent memory
+        # If the layer exists in Sdf memory, we must forcefully clear and expire it to avoid conflicts.
+        force_reload = True
+        existing_layer = Sdf.Layer.Find(str(output_path))
+        
+        if existing_layer:
+            logger.info(f"   ♻️  Recycling existing layer in memory: {output_path}")
+            # If we want a fresh start, we should clear it.
+            existing_layer.Clear()
+            
+            # Using Open() on a cleared valid layer is safer than CreateNew() which fails if identifier exists
+            self.stage = Usd.Stage.Open(existing_layer)
+        else:
+            # Clean slate
+            self.stage = Usd.Stage.CreateNew(str(output_path))
+            
+        if not self.stage:
+            raise RuntimeError(f"Failed to create or open USD stage at {output_path}")
+
         UsdGeom.SetStageUpAxis(self.stage, UsdGeom.Tokens.y)
         UsdGeom.SetStageMetersPerUnit(self.stage, 1.0)
         
         # 2. Define Root
+        # Ensure we define the root properly
         self.root_prim = UsdGeom.Xform.Define(self.stage, "/World").GetPrim()
         self.stage.SetDefaultPrim(self.root_prim)
         
@@ -98,18 +117,33 @@ class USDVariantGenerator:
             obj_type = obj.get("type", "sphere")
             path = f"/World/{obj_id}"
             
+            # Improved Shape Approximation Logic
             if obj_type == "sphere":
                 UsdGeom.Sphere.Define(self.stage, path)
             elif obj_type == "cube":
                 UsdGeom.Cube.Define(self.stage, path)
             elif obj_type == "cylinder":
                 UsdGeom.Cylinder.Define(self.stage, path)
+            else:
+                # Heuristic mapping for unknown types (e.g. "mesh")
+                name_lower = obj_id.lower()
+                if any(x in name_lower for x in ["cup", "mug", "cylinder", "bottle", "can", "saucer", "plate", "disk"]):
+                    UsdGeom.Cylinder.Define(self.stage, path)
+                elif any(x in name_lower for x in ["box", "cube", "table", "block", "brick", "monitor", "screen"]):
+                    UsdGeom.Cube.Define(self.stage, path)
+                else:
+                    # Default fallback
+                    logger.warning(f"Unknown object type '{obj_type}' for {obj_id}. Defaulting to Sphere.")
+                    UsdGeom.Sphere.Define(self.stage, path)
             
             # Apply API schemas on the base topology so they exist
             prim = self.stage.GetPrimAtPath(path)
-            UsdPhysics.RigidBodyAPI.Apply(prim)
-            UsdPhysics.CollisionAPI.Apply(prim)
-            UsdPhysics.MassAPI.Apply(prim)
+            if prim.IsValid():
+                UsdPhysics.RigidBodyAPI.Apply(prim)
+                UsdPhysics.CollisionAPI.Apply(prim)
+                UsdPhysics.MassAPI.Apply(prim)
+            else:
+                logger.error(f"Failed to create prim at {path}")
             
         # -- Lights --
         UsdLux.DomeLight.Define(self.stage, "/World/DomeLight")
@@ -142,14 +176,25 @@ class USDVariantGenerator:
             
             # Transform
             pos = obj_data.get("position", {})
+            rot = obj_data.get("rotation", {})
             scale = obj_data.get("scale", {})
             
-            # We use xform ops. In a variant, we just set the attribute value.
-            # If the ops don't exist, we'd need to add them, but best practice is to set them in static topology or check here.
+            # Application Order: Scale -> Rotate -> Translate (Standard)
             xform = UsdGeom.Xformable(prim)
-            # Resetting xform ops for safety in this simple generator
             xform.ClearXformOpOrder()
+            
+            # 1. Translate
             xform.AddTranslateOp().Set(Gf.Vec3d(pos.get('x',0), pos.get('y',0), pos.get('z',0)))
+            
+            # 2. Rotate (XYZ)
+            xform.AddRotateXYZOp().Set(Gf.Vec3f(rot.get('x',0), rot.get('y',0), rot.get('z',0)))
+            
+            # 3. Scale
+            # Use 'x' as uniform scale if others missing, or default to 1.0
+            sx = scale.get('x', 1.0)
+            sy = scale.get('y', sx)
+            sz = scale.get('z', sx)
+            xform.AddScaleOp().Set(Gf.Vec3f(sx, sy, sz))
             
             # Physics Props
             phy_props = physics_map.get(obj_id, {})

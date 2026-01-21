@@ -240,10 +240,14 @@ Auto-generated script to build USD variants inside Isaac Sim
 import json
 import sys
 import os
+import importlib
 
 # Add project root to path to find modules
 sys.path.append(r"{str(Path(__file__).parent)}")
 
+# Import and FORCE RELOAD to ensure latest code is used in Isaac Sim
+import usd_variant_generator
+importlib.reload(usd_variant_generator)
 from usd_variant_generator import USDVariantGenerator
 
 def main():

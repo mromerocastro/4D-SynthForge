@@ -134,6 +134,23 @@ python main.py examples/ball_cup.mp4 --count 9
 python main.py examples/ball_cup.mp4 --count 100 --render
 ```
 
+# Generate 100 variations with rendering (requires Isaac Sim)
+python main.py examples/ball_cup.mp4 --count 100 --render
+```
+
+### Advanced: Direct USD Generation (No Isaac Sim required)
+
+If you don't have Isaac Sim installed but want to inspect the USD files:
+
+1. Install USD core: `pip install usd-core`
+2. Run the USD generator:
+
+```bash
+python usd_generator.py output/ball_cup_analysis.json
+```
+
+**Output**: `generated_scene.usd` (can be opened in any USD viewer)
+
 ---
 
 ## 📁 Project Structure

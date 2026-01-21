@@ -76,7 +76,7 @@ El sistema genera 100 variaciones automáticamente:
 1. **Gemini 2.0 Flash** - Razonamiento multimodal de video a física
 2. **Nvidia Isaac Sim** - Simulación profesional con PhysX GPU
 3. **Domain Randomization** - La técnica que usa Tesla para entrenar sus autos autónomos
-4. **USD (Universal Scene Description)** - El estándar de Pixar usado en Hollywood
+4. **Validation** - Validado por research reciente (Motive 2026): "Motion Quality is King"
 
 No es un MVP. Es tecnología de producción nivel enterprise."
 

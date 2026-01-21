@@ -166,6 +166,16 @@ class VideoAnalyzer:
         
         if not data["physics_estimation"].get("objects"):
             raise ValueError("No physics objects found")
+            
+        # Motion Estimation validation (Warning only)
+        if "motion_estimation" not in data:
+            logger.warning("⚠️  'motion_estimation' field missing from analysis")
+        else:
+            motion = data["motion_estimation"]
+            if not motion.get("static_background"):
+                logger.warning("⚠️  No static_background description found")
+            if not motion.get("dynamic_agents"):
+                logger.warning("⚠️  No dynamic_agents found")
         
         logger.info("✓ Analysis validation passed")
     
@@ -212,7 +222,20 @@ class VideoAnalyzer:
             if "dome_light" in lighting:
                 dome_intensity = lighting["dome_light"].get("intensity", 0)
                 print(f"\n💡 Dome Light Intensity: {dome_intensity}")
-        
+                # Motion Estimation
+        if "motion_estimation" in data:
+            motion = data["motion_estimation"]
+            print(f"\n🎥 Motion Analysis:")
+            if "static_background" in motion:
+                bg = motion["static_background"]
+                print(f"   • Static Background: {bg.get('description', 'unknown')} (Stability: {bg.get('stability_score', 0)})")
+            
+            if "dynamic_agents" in motion:
+                agents = motion["dynamic_agents"]
+                print(f"   • Dynamic Agents: {len(agents)}")
+                for agent in agents:
+                    print(f"     - {agent.get('id', 'unknown')}: {agent.get('movement_type', 'unknown')}")
+
         print("\n" + "=" * 60 + "\n")
 
 

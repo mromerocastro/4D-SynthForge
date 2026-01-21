@@ -124,6 +124,19 @@ Required output structure:
       "color": {"r": 1.0, "g": 1.0, "b": 1.0}
     }
   },
+  "motion_estimation": {
+    "static_background": {
+      "description": "camera/tripod/ground",
+      "stability_score": 1.0
+    },
+    "dynamic_agents": [
+      {
+        "id": "object_1",
+        "movement_type": "physics_driven/external_force",
+        "is_moving": true
+      }
+    ]
+  },
   "event_timeline": [
     {"frame": 0, "event": "simulation_start", "object_id": "ball"},
     {"frame": 45, "event": "collision", "objects": ["ball", "cup"]},
@@ -142,6 +155,7 @@ CRITICAL RULES:
 3. All positions in meters, all angles in degrees
 4. Estimate realistic PhysX parameters
 5. Identify collision events with frame numbers
+6. MOTION ATTRIBUTION: Distinctly separate static background elements from dynamic agents. Ignore camera shake or compression noise.
 """
 
 # ============================================================================
