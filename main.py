@@ -47,7 +47,8 @@ class SynthForgePipeline:
         video_path: str | Path,
         output_dir: str | Path = OUTPUT_DIR,
         num_variations: int = 9,
-        should_render: bool = False
+        should_render: bool = False,
+        base_usd_path: str | Path = None
     ):
         """
         Run the complete pipeline from video to synthetic data.
@@ -92,7 +93,7 @@ class SynthForgePipeline:
         logger.info("\nSTEP 4/5: Generating Variation Scripts")
         logger.info("-" * 70)
         
-        variation_output = self.step4_generate_variation_scripts(variations, analysis_json)
+        variation_output = self.step4_generate_variation_scripts(variations, analysis_json, base_usd_path)
         
         # Step 5: Render (optional)
         if should_render:
@@ -187,7 +188,7 @@ class SynthForgePipeline:
             logger.error(f"❌ Variation generation failed: {e}")
             raise
     
-    def step4_generate_variation_scripts(self, variations: List[Dict], analysis_json: Path = None) -> Path:
+    def step4_generate_variation_scripts(self, variations: List[Dict], analysis_json: Path = None, base_usd_path: Path = None) -> Path:
         """
         Step 4: Generate a SINGLE USD file with VariantSets for all variations.
         
@@ -218,7 +219,7 @@ class SynthForgePipeline:
             try:
                 from pxr import Usd
                 # If we are here, we have USD libraries
-                generator.create_variant_stage(base_analysis, variations, output_usd)
+                generator.create_variant_stage(base_analysis, variations, output_usd, base_usd_path)
                 return output_usd
                 
             except ImportError:
@@ -267,7 +268,10 @@ def main():
         
     # Generate
     generator = USDVariantGenerator()
-    generator.create_variant_stage(base_data, variations, output_usd)
+    # Pass base usd if provided (needs to be passed into this script too, simplified for now to None if running via builder)
+    # TODO: Pass base_usd path into builder script if needed
+    input_usd = r"{str(base_usd_path)}" if "{str(base_usd_path)}" != "None" else None
+    generator.create_variant_stage(base_data, variations, output_usd, input_usd)
     print("✅ Done!")
 
 if __name__ == "__main__":
@@ -397,6 +401,13 @@ Examples:
         help=f"Output directory (default: {OUTPUT_DIR})"
     )
     
+    parser.add_argument(
+        "--base_usd",
+        type=str,
+        default=None,
+        help="Path to a manual 'Gold Standard' USD file to use as base"
+    )
+    
     args = parser.parse_args()
     
     # Validate input
@@ -412,7 +423,8 @@ Examples:
             video_path=video_path,
             output_dir=args.output,
             num_variations=args.count,
-            should_render=args.render
+            should_render=args.render,
+            base_usd_path=args.base_usd
         )
     except KeyboardInterrupt:
         print("\n\n⚠️  Pipeline interrupted by user")

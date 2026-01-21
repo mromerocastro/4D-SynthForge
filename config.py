@@ -26,6 +26,11 @@ USD_SCENES_DIR = OUTPUT_DIR / "usd_scenes"
 for directory in [OUTPUT_DIR, EXAMPLES_DIR, RENDERS_DIR, USD_SCENES_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
+# Optional: Path to a manually created "Master Scene" USD file
+# If set (or passed via CLI), the system will apply variations to THIS file instead of generating one.
+DEFAULT_BASE_USD = None 
+
+
 # ============================================================================
 # GEMINI API CONFIGURATION
 # ============================================================================

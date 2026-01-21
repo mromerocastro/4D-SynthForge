@@ -151,6 +151,21 @@ python usd_generator.py output/ball_cup_analysis.json
 
 **Output**: `generated_scene.usd` (can be opened in any USD viewer)
 
+### 🆕 Hybrid Workflow (Manual Scene Support)
+
+For maximum control, you can create a "Gold Standard" scene in Isaac Sim manually and use it as a base for variations.
+
+1. **Create Scene**: Build your scene in Isaac Sim.
+2. **Name Objects** (Critical naming convention):
+    - `Dynamic_*`: Objects that move (e.g., `Dynamic_Ball`).
+    - `Surface_*`: Objects that interact (e.g., `Surface_Table`).
+    - `Background_*`: Visual-only background elements (e.g., `Background_Wall`).
+3. **Run Pipeline**:
+   ```bash
+   python main.py video.mp4 --base_usd path/to/my_scene.usd
+   ```
+   The system will apply physics/motion to `Dynamic` objects and visual variations to `Background` objects.
+
 ---
 
 ## 📁 Project Structure

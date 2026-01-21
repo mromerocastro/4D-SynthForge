@@ -29,9 +29,10 @@ class USDVariantGenerator:
         self.root_prim = None
         self.variant_set = None
         
-    def create_variant_stage(self, base_analysis: Dict[str, Any], variations: List[Dict[str, Any]], output_path: str | Path):
+    def create_variant_stage(self, base_analysis: Dict[str, Any], variations: List[Dict[str, Any]], output_path: str | Path, input_usd_path: str | Path = None):
         """
         Main function to author the USD stage with variants.
+        If input_usd_path is provided, it modifies that stage instead of creating a new one.
         """
         output_path = Path(output_path)
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -46,13 +47,15 @@ class USDVariantGenerator:
         
         if existing_layer:
             logger.info(f"   ♻️  Recycling existing layer in memory: {output_path}")
-            # If we want a fresh start, we should clear it.
             existing_layer.Clear()
-            
-            # Using Open() on a cleared valid layer is safer than CreateNew() which fails if identifier exists
-            self.stage = Usd.Stage.Open(existing_layer)
+        
+        # HYBRID WORKFLOW: Open existing stage or create new
+        if input_usd_path and Path(input_usd_path).exists():
+            logger.info(f"   📂 Opening Manual Base Scene: {input_usd_path}")
+            # We copy the base layer to the output path to avoid modifying the original
+            Sdf.Layer.FindOrOpen(str(input_usd_path)).Export(str(output_path))
+            self.stage = Usd.Stage.Open(str(output_path))
         else:
-            # Clean slate
             self.stage = Usd.Stage.CreateNew(str(output_path))
             
         if not self.stage:
@@ -68,7 +71,12 @@ class USDVariantGenerator:
         
         # 3. Author STATIC Topology (Geometry that exists in all variations)
         # We use the base_analysis to define WHAT exists.
-        self._author_static_topology(base_analysis)
+        # 3. Author STATIC Topology
+        # Only if we are NOT using a manual scene
+        if not input_usd_path:
+            self._author_static_topology(base_analysis)
+        else:
+            logger.info("   ℹ️  Skipping topology generation (using manual scene primitives)")
         
         # 4. Create VariantSet
         # This tells USD that this prim has a set of variants called "SimulationVariant"
@@ -157,65 +165,79 @@ class USDVariantGenerator:
         """Sets the specific values for the current variant context."""
         physics = data.get("physics_estimation", {})
         lighting = data.get("lighting_conditions", {})
-        scene_comp = data.get("scene_composition", {})
         
         # -- 1. Update Physics Constants --
         gravity = physics.get("gravity", {"x": 0, "y": -9.81, "z": 0})
         scene_prim = self.stage.GetPrimAtPath("/World/PhysicsScene")
-        # Note: Usually gravity doesn't change per variant, but it can!
-        scene_prim.GetAttribute("physics:gravityMagnitude").Set(abs(gravity.get('y', -9.81)))
+        if scene_prim.IsValid():
+            scene_prim.GetAttribute("physics:gravityMagnitude").Set(abs(gravity.get('y', -9.81)))
 
-        # -- 2. Update Objects (Position, Scale, Physics, Material) --
-        physics_map = {obj.get("id"): obj for obj in physics.get("objects", [])}
-        object_map = {obj.get("id"): obj for obj in scene_comp.get("objects", [])}
+        # -- 2. Update Objects (Layered Randomization Strategy) --
+        # We traverse the stage to find objects matching our naming convention
         
-        for obj_id, obj_data in object_map.items():
-            prim_path = f"/World/{obj_id}"
-            prim = self.stage.GetPrimAtPath(prim_path)
-            if not prim.IsValid(): continue
+        all_prims = self.stage.Traverse()
+        for prim in all_prims:
+            name = prim.GetName()
             
-            # Transform
-            pos = obj_data.get("position", {})
-            rot = obj_data.get("rotation", {})
-            scale = obj_data.get("scale", {})
+            # LAYER 1: Dynamic Objects (Physics + Motion)
+            if "Dynamic_" in name:
+                self._apply_dynamic_overrides(prim, data)
+                
+            # LAYER 2: Surface Objects (Friction + Bounce + Material)
+            elif "Surface_" in name:
+                self._apply_surface_overrides(prim, data)
+                
+            # LAYER 3: Background/Environmental (Visual Only)
+            elif "Background_" in name or "Env_" in name:
+                self._apply_visual_overrides(prim, data)
+
+    def _apply_dynamic_overrides(self, prim, data):
+        """Apply physics logic (mass, velocity) to dynamic objects."""
+        # Find corresponding physics data (heuristic: use first object for now, or match ID)
+        # In specific implementation, you might match "Dynamic_Ball" to json ID "ball"
+        # For hackathon robustness, we apply generic randomized physics props
+        
+        phy_props = data.get("physics_estimation", {}).get("objects", [{}])[0]
+        
+        mass_api = UsdPhysics.MassAPI(prim)
+        if not mass_api: mass_api = UsdPhysics.MassAPI.Apply(prim)
+        mass_api.GetMassAttr().Set(phy_props.get("mass", 1.0))
+        
+        rb_api = UsdPhysics.RigidBodyAPI(prim)
+        if not rb_api: rb_api = UsdPhysics.RigidBodyAPI.Apply(prim)
+        vel = phy_props.get("initial_velocity", {})
+        rb_api.GetVelocityAttr().Set(Gf.Vec3f(vel.get('x',0), vel.get('y',0), vel.get('z',0)))
+        
+        # Also apply material
+        self._apply_visual_overrides(prim, data)
+
+    def _apply_surface_overrides(self, prim, data):
+        """Apply interaction physics (friction) + visuals."""
+        # Random parameters from the first object in the list for consistency
+        phy_props = data.get("physics_estimation", {}).get("objects", [{}])[0]
+        
+        mat_api = UsdPhysics.MaterialAPI(prim)
+        if not mat_api: mat_api = UsdPhysics.MaterialAPI.Apply(prim)
+        
+        mat_api.CreateStaticFrictionAttr().Set(phy_props.get("static_friction", 0.5))
+        mat_api.CreateDynamicFrictionAttr().Set(phy_props.get("dynamic_friction", 0.5))
+        mat_api.CreateRestitutionAttr().Set(phy_props.get("restitution", 0.5))
+        
+        self._apply_visual_overrides(prim, data)
+
+    def _apply_visual_overrides(self, prim, data):
+        """Apply only color/material overrides."""
+        # Heuristic: Pick a random object's material from the variation
+        objects = data.get("scene_composition", {}).get("objects", [])
+        if objects:
+            # We cycle through objects based on name length to get deterministic but varied look
+            idx = len(prim.GetName()) % len(objects)
+            mat_data = objects[idx].get("material", {})
             
-            # Application Order: Scale -> Rotate -> Translate (Standard)
-            xform = UsdGeom.Xformable(prim)
-            xform.ClearXformOpOrder()
+            color = mat_data.get("base_color", {"r": 0.5, "g": 0.5, "b": 0.5})
             
-            # 1. Translate
-            xform.AddTranslateOp().Set(Gf.Vec3d(pos.get('x',0), pos.get('y',0), pos.get('z',0)))
-            
-            # 2. Rotate (XYZ)
-            xform.AddRotateXYZOp().Set(Gf.Vec3f(rot.get('x',0), rot.get('y',0), rot.get('z',0)))
-            
-            # 3. Scale
-            # Use 'x' as uniform scale if others missing, or default to 1.0
-            sx = scale.get('x', 1.0)
-            sy = scale.get('y', sx)
-            sz = scale.get('z', sx)
-            xform.AddScaleOp().Set(Gf.Vec3f(sx, sy, sz))
-            
-            # Physics Props
-            phy_props = physics_map.get(obj_id, {})
-            
-            mass_api = UsdPhysics.MassAPI(prim)
-            mass_api.GetMassAttr().Set(phy_props.get("mass", 1.0))
-            
-            mat_api = UsdPhysics.MaterialAPI.Apply(prim) # Ensure applied
-            mat_api.CreateStaticFrictionAttr().Set(phy_props.get("static_friction", 0.5))
-            mat_api.CreateDynamicFrictionAttr().Set(phy_props.get("dynamic_friction", 0.5))
-            mat_api.CreateRestitutionAttr().Set(phy_props.get("restitution", 0.5))
-            
-            rb_api = UsdPhysics.RigidBodyAPI(prim)
-            vel = phy_props.get("initial_velocity", {})
-            rb_api.GetVelocityAttr().Set(Gf.Vec3f(vel.get('x',0), vel.get('y',0), vel.get('z',0)))
-            
-            # Visual Material (Color)
-            if "material" in obj_data:
-                color = obj_data["material"].get("base_color", {"r": 1, "g": 1, "b": 1})
-                # Simple display color for now
-                gprim = UsdGeom.Gprim(prim)
+            gprim = UsdGeom.Gprim(prim)
+            if gprim:
                 gprim.GetDisplayColorAttr().Set([Gf.Vec3f(color['r'], color['g'], color['b'])])
 
         # -- 3. Update Lighting --

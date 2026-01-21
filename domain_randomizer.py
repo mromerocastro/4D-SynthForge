@@ -76,7 +76,33 @@ class DomainRandomizer:
         self._randomize_physics(variation)
         self._randomize_camera(variation)
         
+        # HYBRID: Add explicit layer configs
+        self._randomize_layers(variation)
+        
         return variation
+
+    def _randomize_layers(self, variation: Dict[str, Any]) -> None:
+        """
+        Add explicit configuration for Hybrid Workflow Layers.
+        """
+        # Dynamic Layer (Physics + Motion)
+        variation["layer_dynamic"] = {
+            "mass_multiplier": random.uniform(*self.config["physics"]["mass_multiplier"]),
+            "velocity_scale": random.uniform(*self.config["physics"]["initial_velocity_scale"])
+        }
+        
+        # Surface Layer (Interaction)
+        variation["layer_surface"] = {
+            "friction": random.uniform(*self.config["physics"]["static_friction"]),
+            "restitution": random.uniform(*self.config["physics"]["restitution"]),
+            "color_hue": random.uniform(*self.config["material"]["base_color_hue"])
+        }
+        
+        # Background Layer (Visual)
+        variation["layer_background"] = {
+            "color_value": random.uniform(*self.config["material"]["base_color_value"]),
+            "roughness": random.uniform(*self.config["material"]["roughness"])
+        }
     
     def _randomize_materials(self, variation: Dict[str, Any]) -> None:
         """
