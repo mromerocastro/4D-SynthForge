@@ -187,18 +187,6 @@ For maximum control, you can create a "Gold Standard" scene in Isaac Sim manuall
     └── test_*.py               # Unit tests
 ```
 
----
-
-## 🎯 Hackathon Demo Flow
-
-### Step 1: The Seed Video
-Record a simple physics interaction:
-- ✅ Ball hitting a cup
-- ✅ Block falling off a table
-- ✅ Marble rolling down a ramp
-
-**Why simple?** Easy for AI to understand, safe for demo, impressive when multiplied.
-
 ### Step 2: Gemini Analysis
 
 Show the JSON output:
@@ -271,14 +259,6 @@ NO prose. NO descriptions. ONLY structured data suitable for USD/PhysX.
 """
 ```
 
-**Why it works:**
-- ✅ Specific format requirements
-- ✅ Numerical values, not categories
-- ✅ PhysX-compatible parameters
-- ✅ No ambiguity
-
----
-
 ## 🔬 Domain Randomization
 
 The system varies:
@@ -292,23 +272,6 @@ The system varies:
 | **Camera Angle** | ±2m offset | Viewpoint robustness |
 
 **Result**: Models trained on this data are more robust to real-world conditions.
-
----
-
-## 🛡️ Safety & Ethics
-
-### Why This Demo is Safe for Hackathons
-
-1. **No Sensitive Content**: Works with geometric primitives (spheres, cubes)
-2. **No People**: Physics objects only
-3. **Technical Focus**: Pure computer graphics and physics
-4. **B2B Application**: Industrial/robotics training data
-
-### Responsible AI Alignment
-
-- ✅ Transparent: Code is open and explainable
-- ✅ Controllable: Users define the input video
-- ✅ Beneficial: Helps AI training without privacy concerns
 
 ---
 
