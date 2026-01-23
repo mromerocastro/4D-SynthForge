@@ -10,7 +10,7 @@
 
 ## 🌟 What is 4D-SynthForge?
 
-**4D-SynthForge** is a demo that performs "reverse engineering" of real-world physics from video, then uses that understanding to:
+**4D-SynthForge** is an idea that "reverse engineering" real-world physics from a video and then uses understanding to:
 
 1. **Analyze** 📹 - Gemini AI extracts physics parameters from your video
 2. **Recreate** 🔧 - Generate USD/PhysX scenes in Nvidia Isaac Sim
