@@ -405,7 +405,6 @@ export GEMINI_API_KEY="your-key"
 ## 📧 Contact
 
 **Built by**: Marlon Romero Castro
-**Competition**: Gemini Hackathon Google DeepMind
 **Demo**: 4D-SynthForge - Physics-Aware Synthetic Data Generation
 
 ---
