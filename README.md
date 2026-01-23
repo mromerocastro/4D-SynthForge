@@ -340,49 +340,6 @@ The system varies:
 
 ---
 
-## 🏆 Hackathon Pitch Points
-
-### Technical Excellence
-- ✅ **Multimodal AI**: Video → Structured Physics
-- ✅ **Industry Tools**: Isaac Sim, USD, PhysX
-- ✅ **Production-Ready**: Generates real synthetic datasets
-
-### Business Value
-- 💰 Synthetic data market: $3.5B by 2028
-- 🤖 Use cases: Robotics, autonomous vehicles, industrial automation
-- 📈 ROI: Reduces data collection costs by 80%
-
-### Innovation
-- 🆕 "4D Reasoning": Physics understanding from pixels
-- 🎯 End-to-end: Video → Sim → Dataset (fully automated)
-- 🔄 Scalable: One video → Infinite variations
-
----
-
-## 🤝 Contributing
-
-This is a hackathon demo! Feel free to:
-- Add more randomization parameters
-- Support additional 3D engines (Houdini, Blender)
-- Improve physics estimation prompts
-- Create better visualization tools
-
----
-
-## 📝 License
-
-MIT License - Built for the Gemini API Developer Competition
-
----
-
-## 🙏 Acknowledgments
-
-- **Google Gemini Team**: For multimodal AI capabilities
-- **Nvidia Omniverse**: For Isaac Sim and USD ecosystem
-- **PhysX Team**: For physics simulation engine
-
----
-
 ## 🚨 Troubleshooting
 
 ### "Gemini API Key not found"
