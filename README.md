@@ -23,6 +23,18 @@
 - **Technical Innovation**: Combines multimodal AI (video→physics) with professional simulation
 - **Safety-First**: Works with simple geometric objects (no sensitive content)
 
+### 🧩 Ecosystem Fit
+
+4D-SynthForge fills a critical gap in the modern AI robotics stack. It does not compete with existing tools; it powers them.
+
+| Component | Tool | Role | 4D-SynthForge's Contribution |
+|-----------|------|------|------------------------------|
+| **The Brain** 🧠 | **LeRobot** (Hugging Face) | Training Policies (Imitation Learning) | **Data Factory**: Provides the thousands of synthetic examples LeRobot needs to learn, avoiding expensive real-world data collection. |
+| **The Eyes** 👀 | **Rerun.io** | Visualization & Analytics | **Simulation Source**: Generates the 3D visual data and physics logs that Rerun visualizes. |
+| **The Forge** ⚒️ | **4D-SynthForge** | **Generative Simulation** | The bridge involving **Video → Physics → Synthetic Data**. |
+
+> **Analogy**: If LeRobot is the pilot and Rerun is the dashboard, **4D-SynthForge is the flight simulator** generating the scenarios for training.
+
 ---
 
 ## 🏗️ Architecture
@@ -145,20 +157,22 @@ python usd_generator.py output/ball_cup_analysis.json
 
 **Output**: `generated_scene.usd` (can be opened in any USD viewer)
 
-### 🆕 Hybrid Workflow (Manual Scene Support)
+### 💎 Hybrid High-Fidelity Workflow (Pro Mode)
 
-For maximum control, you can create a "Gold Standard" scene in Isaac Sim manually and use it as a base for variations.
+For professional results, combine **Real-World Physics** with **High-End Graphics**:
 
-1. **Create Scene**: Build your scene in Isaac Sim.
-2. **Name Objects** (Critical naming convention):
-    - `Dynamic_*`: Objects that move (e.g., `Dynamic_Ball`).
-    - `Surface_*`: Objects that interact (e.g., `Surface_Table`).
-    - `Background_*`: Visual-only background elements (e.g., `Background_Wall`).
-3. **Run Pipeline**:
-   ```bash
-   python main.py video.mp4 --base_usd path/to/my_scene.usd
-   ```
-   The system will apply physics/motion to `Dynamic` objects and visual variations to `Background` objects.
+1.  **Input**: Record your video (e.g., "Ball hitting cup").
+2.  **Analysis**: `python main.py video.mp4` (Gemini extracts real physics).
+3.  **Visuals**: Create a stunning, photorealistic scene in Isaac Sim (use Photogrammetry, Gaussian Splats, or 4K assets).
+    *   **Naming Convention (Crucial)**:
+        *   `Dynamic_Object`: For moving items (receives Physics).
+        *   `Surface_Object`: For static interactables (receives Friction).
+        *   `Background_Object`: For visuals (receives Material variations).
+4.  **Fusion (The Magic)**:
+    ```bash
+    python main.py video.mp4 --base_usd my_photorealistic_scene.usd
+    ```
+    **Result**: Your cinema-quality scene is now "alive" with the exact physics from the real-world video, plus 100 domain-randomized variations.
 
 ---
 

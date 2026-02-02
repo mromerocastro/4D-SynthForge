@@ -85,10 +85,31 @@ ISAAC_SIMULATION_DURATION = 5.0  # seconds
 PHYSICS_ANALYSIS_PROMPT = """
 You are a Physics Simulation Engineer specializing in 4D analysis and Nvidia PhysX simulation.
 
-Analyze this video frame-by-frame and extract ONLY numerical/categorical data in strict JSON format optimized for Nvidia Omniverse Isaac Sim.
+Analyze this video frame-by-frame. BEFORE generating the final JSON, you must perform a "Physics Reasoning" step to deduce the physical properties of the objects found in THIS specific video.
 
-Required output structure:
+1.  **Observe**: Look for visual cues.
+    *   *Mass*: Does the object feel heavy? (Slow acceleration, deep impact, little bounce).
+    *   *Friction*: Does it slide or roll? Does it stop quickly (high friction) or keep moving (low friction)?
+    *   *Restitution (Bounciness)*: How much energy is lost on impact? (0.0 = no bounce, 1.0 = perfect elastic bounce).
+    *   *Materials*: Guess the material (wood, plastic, metal) based on appearance and behavior.
+2.  **Estimate**: Assign numerical values based on your observations.
+3.  **Output**: Generate the strict JSON below.
+
+Required output structure (Template):
 {
+  "physics_reasoning": {
+    "observation_summary": "Brief analysis of what happens in the video.",
+    "object_analysis": [
+      {
+        "id": "unique_object_id",
+        "visual_cues": "Describe visual appearance (color, shape, rigid/soft).",
+        "material_inference": "Inferred material based on behavior.",
+        "mass_reasoning": "Reasoning for estimated mass.",
+        "friction_reasoning": "Reasoning for estimated friction."
+      }
+    ],
+    "confidence_score": 0.0 (0.0 to 1.0)
+  },
   "scene_composition": {
     "objects": [
       {
@@ -109,9 +130,9 @@ Required output structure:
     "gravity": {"x": 0.0, "y": -9.81, "z": 0.0},
     "objects": [
       {
-        "id": "object_1",
+        "id": "same_object_id_as_above",
         "mass": 1.0,
-        "initial_velocity": {"x": 2.0, "y": 0.0, "z": 0.0},
+        "initial_velocity": {"x": 0.0, "y": 0.0, "z": 0.0},
         "initial_angular_velocity": {"x": 0.0, "y": 0.0, "z": 0.0},
         "restitution": 0.5,
         "static_friction": 0.3,
@@ -131,21 +152,19 @@ Required output structure:
   },
   "motion_estimation": {
     "static_background": {
-      "description": "camera/tripod/ground",
+      "description": "Description of static elements",
       "stability_score": 1.0
     },
     "dynamic_agents": [
       {
-        "id": "object_1",
+        "id": "object_id",
         "movement_type": "physics_driven/external_force",
         "is_moving": true
       }
     ]
   },
   "event_timeline": [
-    {"frame": 0, "event": "simulation_start", "object_id": "ball"},
-    {"frame": 45, "event": "collision", "objects": ["ball", "cup"]},
-    {"frame": 60, "event": "object_rest", "object_id": "cup"}
+    {"frame": 0, "event": "event_type", "object_id": "object_id"}
   ],
   "camera_estimation": {
     "position": {"x": 0.0, "y": 1.5, "z": 3.0},
@@ -155,11 +174,11 @@ Required output structure:
 }
 
 CRITICAL RULES:
-1. NO prose or descriptions - ONLY structured JSON
+1. NO prose or descriptions outside the JSON.
 2. Use numerical values, not categories (e.g., mass: 1.0, not "heavy")
-3. All positions in meters, all angles in degrees
-4. Estimate realistic PhysX parameters
-5. Identify collision events with frame numbers
+3. All positions in meters, all angles in degrees.
+4. Estimate realistic PhysX parameters.
+5. Identify collision events with frame numbers.
 6. MOTION ATTRIBUTION: Distinctly separate static background elements from dynamic agents. Ignore camera shake or compression noise.
 """
 
@@ -252,6 +271,13 @@ PHYSICS_JSON_SCHEMA = {
     "type": "object",
     "required": ["scene_composition", "physics_estimation"],
     "properties": {
+        "physics_reasoning": {
+            "type": "object",
+            "required": ["observation_summary", "confidence_score"],
+             "properties": {
+                "confidence_score": {"type": "number"}
+            }
+        },
         "scene_composition": {
             "type": "object",
             "required": ["objects"],

@@ -236,6 +236,18 @@ class VideoAnalyzer:
                 for agent in agents:
                     print(f"     - {agent.get('id', 'unknown')}: {agent.get('movement_type', 'unknown')}")
 
+        # Physics Reasoning (New)
+        if "physics_reasoning" in data:
+            reasoning = data["physics_reasoning"]
+            print(f"\n🧠 Physics Reasoning (Confidence: {reasoning.get('confidence_score', 'N/A')}):")
+            print(f"   \"{reasoning.get('observation_summary', 'No summary provided.')}\"")
+            
+            if "object_analysis" in reasoning:
+                for obj in reasoning["object_analysis"]:
+                    print(f"   • {obj.get('id', 'unknown')}: {obj.get('material_inference', '')}")
+                    print(f"     - Mass: {obj.get('mass_reasoning', '')}")
+                    print(f"     - Friction: {obj.get('friction_reasoning', '')}")
+
         print("\n" + "=" * 60 + "\n")
 
 
