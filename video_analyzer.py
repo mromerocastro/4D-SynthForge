@@ -12,17 +12,15 @@ from typing import Dict, Any, Optional
 import time
 
 try:
-    import google.generativeai as genai
+    from llm_provider import get_provider
 except ImportError:
-    print("⚠️  google-generativeai not installed. Run: pip install google-generativeai")
-    genai = None
+    print("⚠️  llm_provider not found.")
 
 from config import (
-    GEMINI_API_KEY,
-    GEMINI_MODEL,
-    GEMINI_TEMPERATURE,
+    GEMINI_API_KEY,  # Still imported for backward compat if needed, but not used directly
     PHYSICS_ANALYSIS_PROMPT,
-    OUTPUT_DIR
+    OUTPUT_DIR,
+    LLM_PROVIDER
 )
 
 # Setup logging
@@ -43,32 +41,12 @@ class VideoAnalyzer:
         Initialize the VideoAnalyzer.
         
         Args:
-            api_key: Gemini API key (uses config default if not provided)
+            api_key: (Deprecated/Optional)
         """
-        self.api_key = api_key or GEMINI_API_KEY
+        # We now use the provider factory
+        self.provider = get_provider(LLM_PROVIDER)
         
-        if not self.api_key:
-            raise ValueError(
-                "Gemini API key not found. Set GEMINI_API_KEY environment variable "
-                "or pass it to VideoAnalyzer constructor."
-            )
-        
-        if genai is None:
-            raise ImportError("google-generativeai package required")
-        
-        # Configure Gemini
-        genai.configure(api_key=self.api_key)
-        
-        # Initialize model
-        self.model = genai.GenerativeModel(
-            model_name=GEMINI_MODEL,
-            generation_config={
-                "temperature": GEMINI_TEMPERATURE,
-                "response_mime_type": "application/json"
-            }
-        )
-        
-        logger.info(f"✓ Initialized VideoAnalyzer with model: {GEMINI_MODEL}")
+        logger.info(f"✓ Initialized VideoAnalyzer with provider: {LLM_PROVIDER}")
     
     def analyze_video(
         self,
@@ -94,30 +72,13 @@ class VideoAnalyzer:
         logger.info("⏳ Uploading to Gemini API...")
         
         try:
-            # Upload video file
-            video_file = genai.upload_file(str(video_path))
-            logger.info(f"✓ Video uploaded: {video_file.name}")
+            logger.info(f"🤖 Requesting analysis from {LLM_PROVIDER}...")
             
-            # Wait for processing
-            while video_file.state.name == "PROCESSING":
-                logger.info("   Processing video...")
-                time.sleep(2)
-                video_file = genai.get_file(video_file.name)
-            
-            if video_file.state.name == "FAILED":
-                raise RuntimeError(f"Video processing failed: {video_file.state}")
-            
-            logger.info("✓ Video ready for analysis")
-            logger.info("🤖 Running Gemini 4D physics analysis...")
-            
-            # Generate analysis
-            response = self.model.generate_content(
-                [PHYSICS_ANALYSIS_PROMPT, video_file],
-                request_options={"timeout": 120}
-            )
+            # Use the provider to get the raw string response (JSON)
+            response_text = self.provider.analyze_video(video_path, PHYSICS_ANALYSIS_PROMPT)
             
             # Parse JSON response
-            analysis_data = json.loads(response.text)
+            analysis_data = json.loads(response_text)
             
             logger.info("✓ Analysis complete!")
             

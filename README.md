@@ -58,7 +58,7 @@
          ▼
 ┌──────────────────────────────────┐
 │  Code Generator                  │
-│  (Gemini 3.0 Flash Coding Agent) │
+│  (Gemini 3.0 OR Ollama/Llama 3)  │
 │  JSON → USD/PhysX Scripts        │
 └────────┬─────────────────────────┘
          │
@@ -88,11 +88,13 @@
 
 ### Prerequisites
 
-1. **Python 3.10+**
-2. **Gemini API Key** - Get from [Google AI Studio](https://aistudio.google.com)
-3. **Nvidia Isaac Sim** (Optional for rendering)
-   - Download from [Nvidia Omniverse](https://developer.nvidia.com/isaac-sim)
-   - Requires RTX GPU
+1.  **Python 3.10+**
+2.  **AI Provider** (Choose one):
+    -   **Cloud**: Gemini API Key ([Google AI Studio](https://aistudio.google.com))
+    -   **Local (Private)**: [Ollama](https://ollama.com) installed with open models.
+3.  **Nvidia Isaac Sim** (Optional for rendering)
+    -   Download from [Nvidia Omniverse](https://developer.nvidia.com/isaac-sim)
+    -   Requires RTX GPU
 
 ### Installation
 
@@ -102,12 +104,22 @@ cd 4D-SynthForge
 
 # Install dependencies
 pip install -r requirements.txt
+```
 
-# Set your Gemini API key
-export GEMINI_API_KEY="your-api-key-here"
+### Configuration (Dual-Engine)
 
-# (Windows)
-set GEMINI_API_KEY=your-api-key-here
+Choose your intelligence backend in `.env` or variable:
+
+**Option A: Gemini (Cloud Speed)**
+```bash
+export LLM_PROVIDER="gemini"
+export GEMINI_API_KEY="your-key"
+```
+
+**Option B: Ollama (Local Privacy)**
+```bash
+export LLM_PROVIDER="ollama"
+# Requires: ollama pull llava && ollama pull llama3
 ```
 
 ### Basic Usage
@@ -119,8 +131,6 @@ python video_analyzer.py examples/ball_cup.mp4
 ```
 
 **Output**: `output/ball_cup_analysis.json`
-
-
 
 #### 3. Create Variations
 
@@ -140,16 +150,12 @@ python main.py examples/ball_cup.mp4 --count 9
 python main.py examples/ball_cup.mp4 --count 100 --render
 ```
 
-# Generate 100 variations with rendering (requires Isaac Sim)
-python main.py examples/ball_cup.mp4 --count 100 --render
-```
-
 ### Advanced: Direct USD Generation (No Isaac Sim required)
 
 If you don't have Isaac Sim installed but want to inspect the USD files:
 
-1. Install USD core: `pip install usd-core`
-2. Run the USD generator:
+1.  Install USD core: `pip install usd-core`
+2.  Run the USD generator:
 
 ```bash
 python usd_generator.py output/ball_cup_analysis.json
@@ -278,7 +284,7 @@ NO prose. NO descriptions. ONLY structured data suitable for USD/PhysX.
 The system varies:
 
 | Parameter | Range | Purpose |
-|-----------|-------|---------|
+| :-------- | :---- | :------ |
 | **Material Color** | HSV (0-1, 0.5-1, 0.4-1) | Visual diversity |
 | **Lighting Intensity** | 500-3000 lux | Different times of day |
 | **Friction** | 0.1-0.8 | Surface variations |
@@ -292,13 +298,13 @@ The system varies:
 ## 📊 Technical Specifications
 
 ### Gemini Integration
-- Model: `gemini-3-flash-preview`
+- Model: `gemini-3-flash-preview` OR `llava` (Ollama)
 - Input: MP4/MOV video files
 - Output: Structured JSON (validated schema)
 - Temperature: 0.1 (high precision)
 
-### Gemini Coding Agent
-- Model: `gemini-3-flash-preview`
+### Intelligent Coding Agent
+- Model: `gemini-3-flash-preview` OR `llama3`/`deepseek-coder` (Ollama)
 - Input: Physics Analysis JSON
 - Output: Executable Python/USD script
 - System Prompt: Nvidia Isaac Sim & PhysX Expert

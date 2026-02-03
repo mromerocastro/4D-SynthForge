@@ -5,6 +5,9 @@
 # Gemini API
 google-generativeai>=0.3.0
 
+# Ollama API
+ollama>=0.1.6
+
 # Environment variables
 python-dotenv>=1.0.0
 

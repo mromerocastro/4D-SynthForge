@@ -9,7 +9,8 @@ import json
 import logging
 from pathlib import Path
 from typing import Dict, Any, List
-from config import USD_SCENES_DIR, DEFAULT_SCENE_PARAMS
+from config import USD_SCENES_DIR, DEFAULT_SCENE_PARAMS, LLM_PROVIDER
+from llm_provider import get_provider
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -22,8 +23,9 @@ class IsaacCodeGenerator:
     
     def __init__(self):
         """Initialize the code generator."""
+        self.provider = get_provider(LLM_PROVIDER)
         self.script_template = self._load_template()
-        logger.info("✓ IsaacCodeGenerator initialized")
+        logger.info(f"✓ IsaacCodeGenerator initialized with provider: {LLM_PROVIDER}")
     
     def generate_scene(
         self,
@@ -94,28 +96,7 @@ class IsaacCodeGenerator:
         Returns:
             Review of the generated code
         """
-        import os
-        import google.generativeai as genai
-        from config import GEMINI_API_KEY, GEMINI_CODE_MODEL, GEMINI_CODE_TEMPERATURE
-
-        if not GEMINI_API_KEY:
-            raise ValueError("GEMINI_API_KEY not found in environment variables")
-
-        # Configure Gemini
-        genai.configure(api_key=GEMINI_API_KEY)
-        
-        generation_config = {
-            "temperature": GEMINI_CODE_TEMPERATURE,
-            "top_p": 0.95,
-            "top_k": 64,
-            "max_output_tokens": 8192,
-            "response_mime_type": "text/plain",
-        }
-        
-        model = genai.GenerativeModel(
-            model_name=GEMINI_CODE_MODEL,
-            generation_config=generation_config,
-            system_instruction="""You are an expert Python Developer specializing in Nvidia Isaac Sim, USD (Universal Scene Description), and PhysX.
+        system_instruction="""You are an expert Python Developer specializing in Nvidia Isaac Sim, USD (Universal Scene Description), and PhysX.
             
             Your task is to write a COMPLETE, EXECUTABLE Python script for Isaac Sim based on a physics analysis JSON.
             
@@ -134,9 +115,8 @@ class IsaacCodeGenerator:
                 -   Simulation loop
                 -   Cleanup
             """
-        )
-
-        # Prepare Prompt
+        
+        # Prepare Prompt (Re-added)
         prompt = f"""
         Generate an Isaac Sim Python script for the following scene analysis:
         
@@ -157,11 +137,10 @@ class IsaacCodeGenerator:
         7. Save the USD file before closing.
         """
         
-        logger.info(f"🤖 sending request to {GEMINI_CODE_MODEL}...")
+        logger.info(f"🤖 sending request to {LLM_PROVIDER}...")
         
         try:
-            response = model.generate_content(prompt)
-            code = response.text
+            code = self.provider.generate_text(prompt, system_instruction)
             
             # Cleanup markdown if present (safety net)
             code = code.replace("```python", "").replace("```", "")
@@ -169,7 +148,7 @@ class IsaacCodeGenerator:
             return code
             
         except Exception as e:
-            logger.error(f"❌ Gemini Code Generation failed: {e}")
+            logger.error(f"❌ Code Generation failed: {e}")
             raise
 
     def _generate_imports(self) -> str:

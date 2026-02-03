@@ -52,6 +52,19 @@ GEMINI_CODE_MODEL = "gemini-3-flash-preview"
 GEMINI_CODE_TEMPERATURE = 0.0  # Zero for maximum determinism in code generation
 
 # ============================================================================
+# OLLAMA CONFIGURATION (For NVIDIA Hackathon)
+# ============================================================================
+
+# Provider Selection: "gemini" or "ollama"
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini")
+
+# Ollama Settings
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_VISION_MODEL = "llava"  # or "llama3.2-vision"
+OLLAMA_CODE_MODEL = "llama3"   # or "deepseek-coder"
+OLLAMA_TEMPERATURE = 0.1
+
+# ============================================================================
 # ISAAC SIM CONFIGURATION
 # ============================================================================
 
