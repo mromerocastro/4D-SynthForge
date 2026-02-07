@@ -1,6 +1,6 @@
-# 4D-SynthForge 🎬 → 🤖 → 🎲
+# 4D-SynthForge 🎬 → 🧬 → 🎲
 
-**Transform real-world videos into physics-accurate 3D simulations and generate unlimited synthetic training data.**
+**Vibe Coding for Robots. Turn real-world videos into physics-accurate simulations.**
 
 ![Architecture](https://img.shields.io/badge/Stack-Gemini%20%7C%20Isaac%20Sim%20%7C%20USD-blue)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-green)
@@ -10,30 +10,42 @@
 
 ## 🌟 What is 4D-SynthForge?
 
-**4D-SynthForge** is an idea that "reverse engineering" real-world physics from a video and then uses understanding to:
+**4D-SynthForge** is the first **"Vibe Coding" IDE for Physical AI**. 
 
-1. **Analyze** 📹 - Gemini AI extracts physics parameters from your video
-2. **Recreate** 🔧 - Generate USD/PhysX scenes in Nvidia Isaac Sim
-3. **Multiply** 🎲 - Create 100+ variations with domain randomization
-4. **Train** 🤖 - Export synthetic datasets for AI training
+Instead of writing complex simulation code line-by-line, you simply provide the **"vibe"**—a real-world video of a physics interaction. Our AI analyzes the video's physical essence (mass, friction, velocity) and instantly generates a Digital Twin in **NVIDIA Isaac Sim**.
 
-### Why This Matters
+### The Problem
+Building 3D simulations manually is slow, rigid, and hard. You have to guess friction coefficients and write URDF files. It has no flow.
 
-- **B2B Value**: Synthetic data generation saves companies millions in data collection
-- **Technical Innovation**: Combines multimodal AI (video→physics) with professional simulation
-- **Safety-First**: Works with simple geometric objects (no sensitive content)
+### The Solution: Vibe Coding
+You provide the intent (video). The AI provides the implementation (USD/PhysX code).
 
-### 🧩 Ecosystem Fit
+1. **Analyze 📹** - Gemini extracts physics parameters ("the vibe") from your video.
+2. **Recreate 🔧** - Automatically generates USD scenes in Isaac Sim.
+3. **Multiply 🎲** - Creates 100+ variations using Domain Randomization.
+4. **Train 🤖** - Exports synthetic datasets for AI training.
 
-4D-SynthForge fills a critical gap in the modern AI robotics stack. It does not compete with existing tools; it powers them.
+---
 
-| Component | Tool | Role | 4D-SynthForge's Contribution |
-|-----------|------|------|------------------------------|
-| **The Brain** 🧠 | **LeRobot** (Hugging Face) | Training Policies (Imitation Learning) | **Data Factory**: Provides the thousands of synthetic examples LeRobot needs to learn, avoiding expensive real-world data collection. |
-| **The Eyes** 👀 | **Rerun.io** | Visualization & Analytics | **Simulation Source**: Generates the 3D visual data and physics logs that Rerun visualizes. |
-| **The Forge** ⚒️ | **4D-SynthForge** | **Generative Simulation** | The bridge involving **Video → Physics → Synthetic Data**. |
+## 💎 Hybrid High-Fidelity Workflow (Pro Mode)
 
-> **Analogy**: If LeRobot is the pilot and Rerun is the dashboard, **4D-SynthForge is the flight simulator** generating the scenarios for training.
+**"But wait, does it just make spheres and cubes?"**
+
+For rapid prototyping? Yes. 
+**For professional training? No.**
+
+The true power of 4D-SynthForge is the **Hybrid Workflow**. You can bring your own high-quality assets (Photogrammetry, Gaussian Splats, 3D Models) and letting 4D-SynthForge inject the **real-world physics** from your video into them.
+
+**Real World Physics + Cinema Quality Visuals = The Ultimate Training Data**
+
+1.  **Input**: Record your video (e.g., "Ball hitting cup").
+2.  **Analysis**: `python main.py video.mp4` (Gemini extracts real physics).
+3.  **Visuals**: Create a stunning, photorealistic scene in Isaac Sim.
+4.  **Fusion**: 
+    ```bash
+    python main.py video.mp4 --base_usd my_photorealistic_scene.usd
+    ```
+    **Result**: Your cinema-quality scene is now "alive" with the exact physics from the real-world video, plus 100 domain-randomized variations.
 
 ---
 
@@ -42,30 +54,29 @@
 ```
 ┌─────────────────┐
 │  Real-World     │
-│  Video Input    │  (Ball hits cup)
+│  Video Input    │  (The "Vibe")
 └────────┬────────┘
          │
          ▼
 ┌──────────────────────────────────┐
 │  Gemini 3.0 Flash                │
-│  4D Physics Reasoning Engine     │
-│  • Trajectory Analysis           │
-│  • Collision Detection           │
-│  • Material Estimation           │
+│  Physics Extraction Engine       │
+│  • Estimates Mass & Friction     │
+│  • Captures "Physical Priors"    │
 │  → JSON Output                   │
 └────────┬─────────────────────────┘
          │
          ▼
 ┌──────────────────────────────────┐
 │  Code Generator                  │
-│  (Gemini 3.0 OR Ollama/Llama 3)  │
+│  (Gemini 3.0 OR Ollama)          │
 │  JSON → USD/PhysX Scripts        │
 └────────┬─────────────────────────┘
          │
          ▼
 ┌──────────────────────────────────┐
-│  Nvidia Isaac Sim                │
-│  Physics Simulation + Rendering  │
+│  NVIDIA Isaac Sim                │
+│  Physics Simulation              │
 └────────┬─────────────────────────┘
          │
          ▼
@@ -74,12 +85,6 @@
 │  (Omniverse Replicator)          │
 │  → 100+ Variations               │
 └────────┬─────────────────────────┘
-         │
-         ▼
-┌──────────────────────────────────┐
-│  Synthetic Dataset Output        │
-│  Videos, Images, Labels          │
-└──────────────────────────────────┘
 ```
 
 ---
@@ -87,272 +92,52 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 1.  **Python 3.10+**
-2.  **AI Provider** (Choose one):
-    -   **Cloud**: Gemini API Key ([Google AI Studio](https://aistudio.google.com))
-    -   **Local (Private)**: [Ollama](https://ollama.com) installed with open models.
-3.  **Nvidia Isaac Sim** (Optional for rendering)
-    -   Download from [Nvidia Omniverse](https://developer.nvidia.com/isaac-sim)
-    -   Requires RTX GPU
+2.  **Gemini API Key** ([Google AI Studio](https://aistudio.google.com))
+3.  **Nvidia Isaac Sim** (Optional for rendering, required for full pipeline)
 
 ### Installation
 
 ```bash
-# Clone or download this repo
+git clone https://github.com/mromerocastro/4D-SynthForge.git
 cd 4D-SynthForge
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Configuration (Dual-Engine)
-
-Choose your intelligence backend in `.env` or variable:
-
-**Option A: Gemini (Cloud Speed)**
+### Configuration
 ```bash
-export LLM_PROVIDER="gemini"
 export GEMINI_API_KEY="your-key"
-```
-
-**Option B: Ollama (Local Privacy)**
-```bash
-export LLM_PROVIDER="ollama"
-# Requires: ollama pull llava && ollama pull llama3
 ```
 
 ### Basic Usage
 
-#### 1. Analyze a Video
-
+#### 1. Analyze a Video (Get the Physics Vibe)
 ```bash
 python video_analyzer.py examples/ball_cup.mp4
 ```
-
 **Output**: `output/ball_cup_analysis.json`
 
-#### 3. Create Variations
-
+#### 2. Generate Variations (Scale the Vibe)
 ```bash
 python domain_randomizer.py output/ball_cup_analysis.json 9
 ```
 
-**Output**: `output/variations/variation_*.json`
-
-#### 4. Run Full Pipeline
-
+#### 3. Run Full Pipeline
 ```bash
-# Generate 9 variations (no rendering)
-python main.py examples/ball_cup.mp4 --count 9
-
-# Generate 100 variations with rendering (requires Isaac Sim)
 python main.py examples/ball_cup.mp4 --count 100 --render
 ```
 
-### Advanced: Direct USD Generation (No Isaac Sim required)
-
-If you don't have Isaac Sim installed but want to inspect the USD files:
-
-1.  Install USD core: `pip install usd-core`
-2.  Run the USD generator:
-
-```bash
-python usd_generator.py output/ball_cup_analysis.json
-```
-
-**Output**: `generated_scene.usd` (can be opened in any USD viewer)
-
-### 💎 Hybrid High-Fidelity Workflow (Pro Mode)
-
-For professional results, combine **Real-World Physics** with **High-End Graphics**:
-
-1.  **Input**: Record your video (e.g., "Ball hitting cup").
-2.  **Analysis**: `python main.py video.mp4` (Gemini extracts real physics).
-3.  **Visuals**: Create a stunning, photorealistic scene in Isaac Sim (use Photogrammetry, Gaussian Splats, or 4K assets).
-    *   **Naming Convention (Crucial)**:
-        *   `Dynamic_Object`: For moving items (receives Physics).
-        *   `Surface_Object`: For static interactables (receives Friction).
-        *   `Background_Object`: For visuals (receives Material variations).
-4.  **Fusion (The Magic)**:
-    ```bash
-    python main.py video.mp4 --base_usd my_photorealistic_scene.usd
-    ```
-    **Result**: Your cinema-quality scene is now "alive" with the exact physics from the real-world video, plus 100 domain-randomized variations.
-
 ---
 
-## 📁 Project Structure
+## 🧩 Ecosystem Fit
 
-```
-4D-SynthForge/
-├── config.py                    # Configuration and prompts
-├── video_analyzer.py            # Gemini video analysis
-├── code_generator.py            # Gemini code generation agent
-├── domain_randomizer.py         # Variation generator
-├── main.py                      # Pipeline orchestrator
-├── requirements.txt             # Python dependencies
-├── README.md                    # This file
-│
-├── examples/
-│   └── ball_cup.mp4            # Demo video
-│
-├── output/
-│   ├── *_analysis.json         # Gemini outputs
-│   ├── variations/             # Randomized parameters
-│   ├── usd_scenes/             # Generated Python scripts
-│   └── renders/                # Final videos (if rendered)
-│
-└── tests/
-    └── test_*.py               # Unit tests
-```
-
-### Step 2: Gemini Analysis
-
-Show the JSON output:
-
-```json
-{
-  "scene_composition": {
-    "objects": [
-      {"id": "ball", "type": "sphere", "position": {"x": 0, "y": 2, "z": 0}},
-      {"id": "cup", "type": "cylinder", "position": {"x": 1, "y": 0.5, "z": 0}}
-    ]
-  },
-  "physics_estimation": {
-    "objects": [
-      {
-        "id": "ball",
-        "mass": 0.5,
-        "initial_velocity": {"x": 2.0, "y": 0.0, "z": 0.0},
-        "restitution": 0.7
-      }
-    ]
-  }
-}
-```
-
-**Narrative**: "Gemini understood the physics just from pixels!"
-
-### Step 3: The Digital Twin
-
-Run the generated script in Isaac Sim (or show pre-rendered):
-
-```bash
-~/.local/share/ov/pkg/isaac_sim-*/python.sh output/usd_scenes/base_scene.py
-```
-
-**Result**: 3D recreation matching the original video.
-
-### Step 4: The Multiplication
-
-Show a 3×3 grid of variations:
-
-```
-[Blue Ball]  [Red Ball]   [Green Ball]
-[Bright]     [Normal]     [Dark]
-[Bouncy]     [Medium]     [Heavy]
-```
-
-**Closing**: "From one 5-second video, we created 100 unique training examples."
-
----
-
-## 🎓 System Prompt (The Secret Sauce)
-
-The Gemini prompt is designed for **technical precision** and **PhysX compatibility**:
-
-```python
-"""
-You are a Physics Simulation Engineer specializing in Nvidia PhysX.
-
-Analyze this video frame-by-frame and extract ONLY numerical data in JSON format.
-
-Required output:
-- Exact positions in meters (x, y, z)
-- Masses in kilograms
-- Velocities in m/s
-- Friction coefficients (0.0-1.0)
-- Restitution values (0.0-1.0)
-
-NO prose. NO descriptions. ONLY structured data suitable for USD/PhysX.
-"""
-```
-
-## 🔬 Domain Randomization
-
-The system varies:
-
-| Parameter | Range | Purpose |
-| :-------- | :---- | :------ |
-| **Material Color** | HSV (0-1, 0.5-1, 0.4-1) | Visual diversity |
-| **Lighting Intensity** | 500-3000 lux | Different times of day |
-| **Friction** | 0.1-0.8 | Surface variations |
-| **Restitution** | 0.2-0.95 | Bounciness |
-| **Camera Angle** | ±2m offset | Viewpoint robustness |
-
-**Result**: Models trained on this data are more robust to real-world conditions.
-
----
-
-## 📊 Technical Specifications
-
-### Gemini Integration
-- Model: `gemini-3-flash-preview` OR `llava` (Ollama)
-- Input: MP4/MOV video files
-- Output: Structured JSON (validated schema)
-- Temperature: 0.1 (high precision)
-
-### Intelligent Coding Agent
-- Model: `gemini-3-flash-preview` OR `llama3`/`deepseek-coder` (Ollama)
-- Input: Physics Analysis JSON
-- Output: Executable Python/USD script
-- System Prompt: Nvidia Isaac Sim & PhysX Expert
-
-### Isaac Sim Stack
-- USD: Universal Scene Description
-- PhysX 5: GPU-accelerated physics
-- RTX Rendering: Ray-traced visuals
-- Replicator: Domain randomization API
-
-### Performance
-- Analysis: ~30 seconds per video
-- Code Generation: ~1 second per scene
-- Rendering: ~2-5 seconds per variation (GPU)
-- **Total**: 100 variations in ~15 minutes
-
----
-
-## 🚨 Troubleshooting
-
-### "Gemini API Key not found"
-```bash
-export GEMINI_API_KEY="your-key"
-# or set in config.py
-```
-
-### "Isaac Sim not found"
-- Install from [Nvidia Downloads](https://developer.nvidia.com/isaac-sim)
-- Or skip rendering: `python main.py video.mp4` (generates scripts only)
-
-### "Video analysis failed"
-- Check video format (MP4, MOV supported)
-- Ensure video shows clear physics interaction
-- Try shorter videos (< 30 seconds)
+| Component | Tool | Role | 4D-SynthForge's Contribution |
+|-----------|------|------|------------------------------|
+| **The Brain** 🧠 | **LeRobot** (Hugging Face) | Training Policies | **Data Factory**: Provides the synthetic examples LeRobot needs to learn. |
+| **The Eyes** 👀 | **Rerun.io** | Visualization | **Simulation Source**: Generates the 3D visual data to visualize. |
+| **The Forge** ⚒️ | **4D-SynthForge** | **Vibe Coding** | **Video → Physics → Data**. |
 
 ---
 
 ## 📧 Contact
-
 **Built by**: Marlon Romero Castro
-**Demo**: 4D-SynthForge - Physics-Aware Synthetic Data Generation
-
----
-
-<div align="center">
-
-**🎬 From Reality to Simulation to Infinity 🚀**
-
-*One Video × Infinite Possibilities*
-
-</div>
