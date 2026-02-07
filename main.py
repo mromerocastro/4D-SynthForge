@@ -95,20 +95,36 @@ class SynthForgePipeline:
         
         variation_output = self.step4_generate_variation_scripts(variations, analysis_json, base_usd_path)
         
+        # step4 returns a single Path (either .usd or .py builder)
+        # We wrap it in a list if it's a python script that needs rendering, 
+        # BUT if it is the builder script, we should probably run that INSTEAD of rendering.
+        # Actually, the original logic for step5_batch_render expects a list of scripts to run with python.sh
+        # If output is the builder script, we can run it. If it is the USD, we can't "run" it.
+        
+        scripts_to_run = []
+        if variation_output.suffix == '.py':
+             scripts_to_run = [variation_output]
+        
         # Step 5: Render (optional)
-        if should_render:
-            logger.info("\nSTEP 5/5: Batch Rendering")
+        if should_render and scripts_to_run:
+            logger.info("\nSTEP 5/5: Batch Rendering / Generation")
             logger.info("-" * 70)
             
-            self.step5_batch_render(variation_scripts)
+            self.step5_batch_render(scripts_to_run)
+        elif should_render and variation_output.suffix == '.usd':
+             logger.info("\nSTEP 5/5: Skipping Rendering (Output is already a USD stage)")
+             logger.info("-" * 70)
+
         else:
             logger.info("\nSTEP 5/5: Skipping Rendering")
             logger.info("-" * 70)
-            logger.info("⏭️  Rendering skipped. Run with --render to execute in Isaac Sim")
-            logger.info(f"   Scripts ready at: {USD_SCENES_DIR}")
+            if variation_output.suffix == '.py':
+                logger.info(f"⏭️  Run the variant builder manually: ~/.local/share/ov/pkg/isaac_sim-*/python.sh {variation_output}")
+            else:
+                 logger.info("⏭️  Rendering skipped. Run with --render to execute in Isaac Sim")
         
         # Summary
-        self.print_summary(video_path, analysis_json, num_variations, should_render)
+        self.print_summary(video_path, analysis_json, num_variations, should_render, variation_output)
     
     def step1_analyze_video(self, video_path: Path) -> Path:
         """
@@ -330,7 +346,8 @@ if __name__ == "__main__":
         video_path: Path,
         analysis_json: Path,
         num_variations: int,
-        rendered: bool
+        rendered: bool,
+        variation_output: Path
     ) -> None:
         """Print final summary."""
         print("\n" + "=" * 70)
@@ -343,16 +360,24 @@ if __name__ == "__main__":
         print(f"\n📂 Key Outputs:")
         print(f"   • Analysis: {analysis_json}")
         print(f"   • Scripts: {USD_SCENES_DIR}/base_scene.py")
-        print(f"   • Master USD: {USD_SCENES_DIR}/master_scene_variants.usd")
-        print(f"   • Variations: {OUTPUT_DIR}/variations/")
         
-        if rendered:
-            print(f"   • Renders: {RENDERS_DIR}/")
+        if variation_output.suffix == '.py':
+             print(f"   • Builder Script: {variation_output}")
+             print(f"   • Variations JSON: {OUTPUT_DIR}/variations/")
         else:
+             print(f"   • Master USD: {variation_output}")
+             
+        if rendered and variation_output.suffix == '.py':
+             print(f"   • Execution: Script sent to Isaac Sim")
+        elif not rendered and variation_output.suffix == '.py':
+            print(f"\n🚀 Next Steps (IMPORTANT):")
+            print(f"   You are missing USD libraries in this environment.")
+            print(f"   To generate the USD variants, run this inside Isaac Sim:")
+            print(f"   👉 ~/.local/share/ov/pkg/isaac_sim-*/python.sh {variation_output}")
+        elif not rendered:
             print(f"\n🚀 Next Steps:")
-            print(f"   1. Install Nvidia Isaac Sim")
-            print(f"   2. Run scripts with: ~/.local/share/ov/pkg/isaac_sim-*/python.sh <script.py>")
-            print(f"   3. Or re-run with --render flag")
+            print(f"   1. Open {variation_output} in Isaac Sim")
+            print(f"   2. Or run with --render to batch render images (if implemented)")
         
         print("\n" + "=" * 70 + "\n")
 

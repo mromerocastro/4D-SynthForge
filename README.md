@@ -127,6 +127,20 @@ python domain_randomizer.py output/ball_cup_analysis.json 9
 python main.py examples/ball_cup.mp4 --count 100 --render
 ```
 
+
+### 🔧 Troubleshooting: USD Generation
+
+If you run `main.py` in a standard Python environment (without Isaac Sim libraries), it cannot directly create the `.usd` file. Instead, it generates a builder script.
+
+**To finish generating the variants:**
+
+```bash
+# Run the generated builder script using Isaac Sim's python
+~/.local/share/ov/pkg/isaac_sim-*/python.sh output/usd_scenes/build_variants.py
+```
+
+This will produce the final `master_scene_variants.usd` with all your physics variations packed inside.
+
 ---
 
 ## 🧩 Ecosystem Fit
